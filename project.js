@@ -1,26 +1,17 @@
 let exchangeRates = {};
 let selectedCurrency = "USD";
-const API_KEY = "abfddebfec56e4f9435d7ba6"; // Replace with a real API key
+const API_KEY = "abfddebfec56e4f9435d7ba6"; // Replace with your API key
 let countryToCurrency = {};
-let isExchangeRatesLoaded = false; // Add a flag to track if exchange rates are loaded
-
-// Use proxy OR direct API
-const useProxy = false; // Change to `true` if running a proxy server
-const proxyUrl = useProxy ? "http://localhost:5000/proxy?url=" : "";
-const apiUrl = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`;
+let isExchangeRatesLoaded = false;
+let isCountryDataLoaded = false;
 
 // Fetch exchange rates
-fetch(useProxy ? proxyUrl + encodeURIComponent(apiUrl) : apiUrl) // Fix URL construction
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-    })
+fetch(`https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`)
+    .then(response => response.json())
     .then(data => {
         if (data.result === "success") {
             exchangeRates = data.conversion_rates;
-            isExchangeRatesLoaded = true; // Set the flag to true
+            isExchangeRatesLoaded = true;
             console.log("Exchange Rates Loaded:", exchangeRates);
         } else {
             console.error("API Error:", data.error);
@@ -28,14 +19,9 @@ fetch(useProxy ? proxyUrl + encodeURIComponent(apiUrl) : apiUrl) // Fix URL cons
     })
     .catch(error => console.error("Fetch Error:", error));
 
-// Fetch country-currency mapping
+// Fetch country-currency mapping dynamically
 fetch("https://restcountries.com/v3.1/all?fields=name,currencies")
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         data.forEach(country => {
             const countryName = country.name.common;
@@ -44,21 +30,20 @@ fetch("https://restcountries.com/v3.1/all?fields=name,currencies")
                 countryToCurrency[countryName] = currencyCode;
             }
         });
+        isCountryDataLoaded = true;
         console.log("Country to Currency Mapping:", countryToCurrency);
     })
     .catch(error => console.error("Country API Error:", error));
 
-// Initialize Map
-const map = L.map('map').setView([20, 0], 2);
+// Initialize the map
+const map = L.map('map').setView([20, 0], 2); // Centered world view
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
 
 // Load GeoJSON countries
 fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         L.geoJSON(data, {
             style: { color: "#3388ff", weight: 1 },
@@ -88,7 +73,8 @@ function createFloatingBox(content, x, y) {
         background: "rgba(0, 0, 0, 0.8)",
         color: "white",
         borderRadius: "5px",
-        zIndex: "1000"
+        zIndex: "1000",
+        pointerEvents: "none" // Prevent the box from blocking map interactions
     });
     infoBox.innerHTML = content;
 }
@@ -96,14 +82,14 @@ function createFloatingBox(content, x, y) {
 function removeFloatingBox() {
     let infoBox = document.getElementById("info-box");
     if (infoBox) {
-        document.body.removeChild(infoBox);
+        infoBox.remove();
     }
 }
 
-// Show currency conversion  
+// Show currency conversion
 function showCurrencyConversion(e) {
-    if (!isExchangeRatesLoaded) {
-        createFloatingBox("Exchange rates are still loading...", e.originalEvent.clientX, e.originalEvent.clientY);
+    if (!isExchangeRatesLoaded || !isCountryDataLoaded) {
+        createFloatingBox("Loading data...", e.originalEvent.clientX, e.originalEvent.clientY);
         return;
     }
 
@@ -125,3 +111,15 @@ function showCurrencyConversion(e) {
         createFloatingBox(`Exchange rate not available for ${countryCode}`, e.originalEvent.clientX, e.originalEvent.clientY);
     }
 }
+
+// Dropdown to change base currency
+document.addEventListener("DOMContentLoaded", function () {
+    const currencySelector = document.getElementById("currency-selector");
+    if (currencySelector) {
+        currencySelector.addEventListener("change", function (event) {
+            selectedCurrency = event.target.value;
+        });
+    } else {
+        console.error("Currency selector not found in the DOM.");
+    }
+});
