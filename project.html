@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Currency Converter</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="project.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Heading -->
+        <h1>World Currency Converter</h1>
+
+        <!-- Description -->
+        <p class="description">
+            This tool shows real-time conversion of currencies between the selected base currency and the currency of the hovered country.
+        </p>
+
+        <!-- Currency Selector -->
+        <div class="currency-selector-container">
+            <label for="currency-selector">Select Base Currency:</label>
+            <br> <br>
+            <select id="currency-selector">
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="INR">INR - Indian Rupee</option>
+                <option value="JPY">JPY - Japanese Yen</option>
+                <option value="GBP">GBP - British Pound</option>
+            </select>
+        </div>
+
+        <!-- Map -->
+        <div id="map"></div>
+
+        <!-- Info Box -->
+        <div id="info-box">Hover over a country to see currency conversion</div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="project.js"></script>
+</body>
+</html>
