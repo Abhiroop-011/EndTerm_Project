@@ -1,11 +1,10 @@
 let exchangeRates = {};
 let selectedCurrency = "USD";
-const API_KEY = "abfddebfec56e4f9435d7ba6"; // Replace with your API key
+const API_KEY = "abfddebfec56e4f9435d7ba6"; 
 let countryToCurrency = {};
 let isExchangeRatesLoaded = false;
 let isCountryDataLoaded = false;
 
-// Fetch exchange rates
 fetch(`https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`)
     .then(response => response.json())
     .then(data => {
@@ -19,7 +18,6 @@ fetch(`https://v6.exchangerate-api.com/v6/${API_KEY}/latest/USD`)
     })
     .catch(error => console.error("Fetch Error:", error));
 
-// Fetch country-currency mapping dynamically
 fetch("https://restcountries.com/v3.1/all?fields=name,currencies")
     .then(response => response.json())
     .then(data => {
@@ -35,13 +33,11 @@ fetch("https://restcountries.com/v3.1/all?fields=name,currencies")
     })
     .catch(error => console.error("Country API Error:", error));
 
-// Initialize the map
-const map = L.map('map').setView([20, 0], 2); // Centered world view
+const map = L.map('map').setView([20, 0], 2); 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// Load GeoJSON countries
 fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json")
     .then(response => response.json())
     .then(data => {
@@ -57,7 +53,6 @@ fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.g
     })
     .catch(error => console.error("GeoJSON Load Error:", error));
 
-// Floating box functions
 function createFloatingBox(content, x, y) {
     let infoBox = document.getElementById("info-box");
     if (!infoBox) {
@@ -74,7 +69,7 @@ function createFloatingBox(content, x, y) {
         color: "white",
         borderRadius: "5px",
         zIndex: "1000",
-        pointerEvents: "none" // Prevent the box from blocking map interactions
+        pointerEvents: "none" 
     });
     infoBox.innerHTML = content;
 }
@@ -86,7 +81,6 @@ function removeFloatingBox() {
     }
 }
 
-// Show currency conversion
 function showCurrencyConversion(e) {
     if (!isExchangeRatesLoaded || !isCountryDataLoaded) {
         createFloatingBox("Loading data...", e.originalEvent.clientX, e.originalEvent.clientY);
@@ -112,7 +106,6 @@ function showCurrencyConversion(e) {
     }
 }
 
-// Dropdown to change base currency
 document.addEventListener("DOMContentLoaded", function () {
     const currencySelector = document.getElementById("currency-selector");
     if (currencySelector) {
